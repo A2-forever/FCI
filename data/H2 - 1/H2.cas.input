@@ -1,0 +1,12 @@
+&RASSCF
+  fileorb = H2.ScfOrb
+  inactive = 0
+  ras2 = 2
+  nactel = 2
+  spin = 1
+  symmetry = 1
+  group = c1
+  ciroot = 3 3 1
+  prwf = 0
+
+ 

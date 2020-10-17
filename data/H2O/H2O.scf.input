@@ -1,0 +1,8 @@
+&GATEWAY
+    coord = H2O.xyz
+    basis = sto-3g
+    group = c1
+
+&SEWARD
+
+&SCF

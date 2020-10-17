@@ -1,0 +1,9 @@
+&RASSCF
+  fileorb = N2.ScfOrb
+  inactive = 7
+  ras2 = 3
+  nactel = 4
+  spin = 1
+  symmetry = 1
+  group = c1
+ 

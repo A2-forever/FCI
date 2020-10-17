@@ -1,0 +1,15 @@
+&RASSCF
+  fileorb = N2.RasOrb
+  ras2 = 6
+  spin = 1
+  nactel = 6
+  symmetry = 1
+  group = c1
+DMRG
+RGINPUT
+  nsweeps = 4
+  max_bond_dimension = 100
+EndRG
+FCIDUMP
+ 
+ 

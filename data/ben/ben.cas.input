@@ -1,0 +1,9 @@
+&RASSCF
+  fileorb = ben.ScfOrb
+  inactive =0
+  ras2 = 6
+  nactel = 6
+  spin = 1
+  symmetry = 1
+  group = c1
+ 
