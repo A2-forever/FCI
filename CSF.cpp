@@ -17,7 +17,7 @@ CSF::CSF::CSF()                                   //默认构造函数
 
 CSF::CSF(const std::vector<int> &Orbital_ex, const double &S_ex, const double &MS_ex)                                   //默认构造函数
 {
-    nelec = count(Orbital_ex.begin(), Orbital_ex.end(), 1) + 2 * count(Orbital_ex.begin(), Orbital_ex.end(), 2);
+    nelec = count(Orbital_ex.begin(), Orbital_ex.end(), 1) + count(Orbital_ex.begin(), Orbital_ex.end(), 2) + 2 * count(Orbital_ex.begin(), Orbital_ex.end(), 3);
     nOrb = Orbital_ex.size();
     S = S_ex;
     MS = MS_ex;
@@ -26,6 +26,7 @@ CSF::CSF(const std::vector<int> &Orbital_ex, const double &S_ex, const double &M
         Orbital[i] = Orbital_ex[i];
     
     this->CSF2Slater();
+    this->cofcal();
     
 
 }
@@ -37,30 +38,92 @@ CSF::~CSF()                                  //默认析构函数
 bool CSF::CSF2Slater()
 {
     vector<int> Orbital_Slater(2 * nOrb);
-    vector<int> index;
+    int n3 = 2 * count(Orbital.begin(), Orbital.end(), 3);//双占电子数
+
+
+    vector<int> nsigma(2);
+    nsigma[0] = (nelec -n3 + MS2)/2;
+    nsigma[1] = (nelec -n3 - MS2)/2;
+
+    vector<int> index(nelec - n3);
+
+
     for(int i = 0; i < nOrb; i++)
     {
-        if(Orbital[i] == 2)
+        if(Orbital[i] == 3)
         {
             Orbital_Slater[i] = 1;
             Orbital_Slater[nOrb + i] = 1;
-            Orbital_S[i] = 3;
         }
-        else if(Orbital[i] == 1)
+        else if(Orbital[i] == 1||Orbital[i] == 2)
         {
             index.push_back(i);
         }
     }
 
-    vector<int> nsigma(2);
-    int count = index.size();
-    nsigma[0] = (count + MS2)/2;
-    nsigma[1] = (count - MS2)/2;
-
-    this->vector2Slater(Orbital_Slater, index, count, nsigma[0]);
+    this->vector2Slater(Orbital_Slater, index, nelec -n3, nsigma[0]);
+    n_Slater_CI = Slater_CI.size();
 
     
 
+}
+
+bool CSF::cofcal()
+{
+    vector<int> a(nOrb);
+    vector<int> b(nOrb);
+    vector<int> c(nOrb);
+    vector<int> d(nOrb);
+
+    int p = Orbital[0];
+    if(p == 1)
+        b[0] = 1;
+    else if(p == 3)
+        a[0] = 1;
+    
+    c[0] = 1 - a[0] - b[0];
+    d[0] = 3 * a[0] + b[0];
+    
+    for(int i = 1; i < nOrb; i++)
+    {
+        p = Orbital[i];
+        if(p == 1)
+            b[i] = b[i - 1] + 1;
+        else if(p == 2)
+        {
+            a[i] = a[i - 1] + 1;
+            b[i] = b[i - 1] - 1;
+        }
+        else if(p == 3)
+            a[i] = a[i - 1] + 1;
+        
+        c[i] = i + 1 - a[i] - b[i];
+        d[i] = 3 * (a[i] - a[i - 1]) + (b[i] - b[i - 1]);
+    }
+
+    for(int i = 0; i < n_Slater_CI; i++)
+    {
+        double f = 1;
+        for(int j = 0; j < nOrb; j++)
+        {
+            if(d[j] == 0)
+                f *= 1;
+            else if(d[j] == 1)
+            {
+                if()
+                f *= sqrt((a[j] + b[j] - gamma[j])/b[j]);
+            }
+            else if(d[j] == 2)
+            {
+                f *= 1;
+            }
+            else if(d[j] == 3)
+            {
+                f *= 1;
+            }
+        }
+        coefficient[i] = f;
+    }
 }
 
 bool CSF::vector2Slater(std::vector<int> &Orbital_Slater, std::vector<int> &index, int nOrb_ex, int nalpha)
@@ -80,7 +143,6 @@ bool CSF::vector2Slater(std::vector<int> &Orbital_Slater, std::vector<int> &inde
         Slater_det new_det(Orbital_Slater);
         Slater_CI.push_back(new_det);
         return 1;
-
         
     }
 
@@ -93,7 +155,7 @@ bool CSF::vector2Slater(std::vector<int> &Orbital_Slater, std::vector<int> &inde
     }
 }
 
-int CSF_new(int nelec_ex, int nOrb_ex, const double &S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array)
+int CSF_new(int nelec_ex, int nOrb_ex, const double &S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array, int start)
 {
     //cout << nelec_ex <<" "<< nOrb_ex<< endl;
     if (nelec_ex < 1e-6)
@@ -101,45 +163,49 @@ int CSF_new(int nelec_ex, int nOrb_ex, const double &S_ex, std::vector<int> &Orb
         int n1 = count(Orbital_ex.begin(), Orbital_ex.end(), 1);//单占轨道数量（自旋下降）
         int n2 = count(Orbital_ex.begin(), Orbital_ex.end(), 2);//单占轨道数量（自旋上升）
         int n3 = count(Orbital_ex.begin(), Orbital_ex.end(), 3);//双占轨道数量
-        int nelec = n1 + 2 * n2;
-        int n_beta = (nelec - MS)/2;
-        if( n2 > n_beta)
+        double S = ((double)(n1 - n2))/2;
+        if(abs(S - S_ex) > 1e-6)
             return 0;
 
-        int n_alpha = n1;//i表示使自旋增大的电子数
-        int n_beta = 0;//j表示使自旋减小的电子数
-        while (n_alpha > n_beta)
+        for(double MS = ((double)(n1 + n2))/2; MS > 0; MS--)
         {
-            double S= (n_up - n_down)/2;
-            CSF new_CSF(Orbital_ex, S, MS);
+            CSF new_CSF(Orbital_ex, S_ex, MS);
             CSF_Array.push_back(new_CSF);
-            n_up--;
-            n_down++;
         }
     }
-    else if (nOrb_ex < 1e-6)
+    else if (start >= nOrb_ex)
+    {
         return 0;
+    }
+    
 
     //本次使用的i用于表示电子占据数
-    int count = 0;
-    for(int i = 0; i<= 2; i++)
+    int ncount = 0;
+    int n = 0;
+    int n1 = count(Orbital_ex.begin(), Orbital_ex.begin() + start, 1);
+    int n2 = count(Orbital_ex.begin(), Orbital_ex.begin() + start, 2);
+    for(int i = 0; i<= 3; i++)
     {
-        if(i < nelec_ex)
+        if(i == 2)
         {
-            Orbital_ex[nOrb_ex - 1] = i;
-            count += CSF_new(nelec_ex - i, nOrb_ex - 1, S_ex, Orbital_ex, CSF_Array);
-            Orbital_ex[nOrb_ex - 1] = 0;
+            if(n1 < n2)
+                continue;
+            n = 1;
         }
-        else//到达剩余电子数之后，就可以不用做了
+        else if(i == 3)
+            n = 2;
+        else
+            n = i;
+            
+        if(n <= nelec_ex)
         {
-            Orbital_ex[nOrb_ex - 1] = nelec_ex;
-            count += CSF_new(nelec_ex - i, nOrb_ex - 1, S_ex, Orbital_ex, CSF_Array);
-            Orbital_ex[nOrb_ex - 1] = 0;
-            break;
+            Orbital_ex[start - 1] = i;
+            ncount += CSF_new(nelec_ex - n, nOrb_ex, S_ex, Orbital_ex, CSF_Array, start + 1);
+            Orbital_ex[start - 1] = 0;
         }
     }
 
-    return count;
+    return ncount;
     
 }
 
@@ -149,7 +215,7 @@ std::ostream &operator<<(std::ostream &os, const CSF &k)
     os << endl;
     os << "nelec: " << k.nelec << endl;
     os << "nOrb:  " << k.nOrb << endl;
-    os << "MS:  " << k.MS << endl;
+    os << "S:  " << k.S << endl;
     for (int i = 0; i < k.nOrb; i++)
     {
         os << k.Orbital[i] << "  ";
