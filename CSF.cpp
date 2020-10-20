@@ -106,6 +106,11 @@ bool CSF::cofcal()
         double f = 1;
         for(int j = 0; j < nOrb; j++)
         {
+            if(Slater_CI[i].Orb(j, 0))
+                int delta = 1;
+            else
+                int delta = 0;
+            
             if(d[j] == 0)
                 f *= 1;
             else if(d[j] == 1)
