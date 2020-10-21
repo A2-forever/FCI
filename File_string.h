@@ -2,7 +2,6 @@
 #define FILE_STRING_H_
 
 #include <iostream>
-#include <string>
 #include <vector>
 
 bool read_int(const std::string &file_name, int &nelec, int &n_Orb, double &MS, double &h_nuc, std::vector<double> &h, std::vector<double> &g); //读取文件中的积分，电子数与分子轨道数

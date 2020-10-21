@@ -1,11 +1,12 @@
 #include "File_string.h"
 #include "FCI.h"
+#include "CI.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <algorithm>
 #include <ctime>
-#include </home/lingzhiz/Documents/eigen-3.3.8/Eigen/Dense>
+#include <Eigen/Dense>
 using namespace std;
 using namespace Eigen;
 
@@ -89,11 +90,20 @@ int main()
 
 
 	//创建FCI类，存储分子轨道积分
-	CI FCI(h_nuc, h, g, nOrb);
+	FCI FCI(h_nuc, h, g, nOrb);
 	//创建组态，CI_Array用于存储组态，Orbital表示暂时表示组态的数组，没有实际用处
 	vector<Slater_det> CI_Array;
 	vector<int> Orbital(2 * nOrb);
 	int nCI = CI_new(nelec, 2 * nOrb, MS, Orbital, CI_Array);
+	cout<<nCI<<endl;
+
+
+	vector<CSF> CSF_Array;
+	double S = 0;
+	int start = 0;
+	vector<int> Orbital_CSF(nOrb);
+	int nCSF = CSF_new(nelec, nOrb, S, Orbital_CSF, CSF_Array, start);
+	cout<<nCSF<<endl;
 
 
 	logfile << "the number of CIs: " << nCI << endl;
@@ -105,6 +115,7 @@ int main()
 	//构建Hamilton矩阵
 	double temp = 0;
 	MatrixXd H(nCI, nCI);
+	MatrixXd H2(nCSF, nCSF);
 	for (int i = 0; i < nCI; i++)
 	{
 		H(i, i) = FCI.H_ij(CI_Array[i], CI_Array[i]);
