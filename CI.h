@@ -9,8 +9,6 @@
 class Slater_det{
     //判断分子轨道i与分子轨道j之间alpha或beta电子的差别,index存放位置，N表示alpha和beta电子的数目
     friend bool find(Slater_det &k1, Slater_det &k2, std::vector<int> &Num, std::vector<int> &index);
-    //构建所有符合条件的CI组态，输入指定电子数，轨道数与自旋z分量，CI组态存于AI_Array中
-    friend int CI_new(int nelec_ex, int nOrb_ex, const double &MS, std::vector<int> &Orbital_ex, std::vector<Slater_det> &CI_Array);
     friend std::ostream &operator<<(std::ostream &os, const Slater_det &k);
     friend class CSF;
 
@@ -33,8 +31,6 @@ class Slater_det{
 };
 
 class CSF{
-    //构建所有符合条件的CI组态，输入指定电子数，轨道数与自旋z分量，CI组态存于AI_Array中
-    friend int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array, int start);
     friend std::ostream &operator<<(std::ostream &os, const CSF &k);
     friend class FCI;
 
@@ -58,5 +54,9 @@ class CSF{
         bool coff_cal();
 };
 
+//构建所有符合条件的CI组态，输入指定电子数，轨道数与自旋z分量，CI组态存于AI_Array中
+int CI_new(int nelec_ex, int nOrb_ex, const double &MS, std::vector<int> &Orbital_ex, std::vector<Slater_det> &CI_Array);
+//构建所有符合条件的CI组态，输入指定电子数，轨道数与自旋z分量，CI组态存于AI_Array中
+int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array, int start, double MS_ex);
 
 #endif
