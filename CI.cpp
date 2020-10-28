@@ -6,6 +6,7 @@
 
 using std::vector;
 using std::string;
+using std::cout;
 using std::endl;
 
 
@@ -89,12 +90,12 @@ bool find(Slater_det &k1, Slater_det &k2, vector<int> &Num, vector<int> &index)
         {
             if(k1.Orbital[sigma * nOrb + i] != k2.Orbital[sigma * nOrb + i])
             {                                                                       //出现占据情况不同
-                if(k1.Orbital[sigma * nOrb + i] == 1)                            //k1该位置占据电子，k2未占据
+                if(k1.Orbital[sigma * nOrb + i] == 1)                               //k1该位置占据电子，k2未占据
                 {
                     index[0 * 2 * nOrb + sigma * nOrb + count1] = i;
                     count1++;
                 }
-                else                                                               //k2该位置占据电子，k1未占据
+                else                                                                //k2该位置占据电子，k1未占据
                 {
                     index[1 * 2 * nOrb + sigma * nOrb + count2] = i;
                     count2++;
@@ -174,23 +175,28 @@ std::ostream &operator<<(std::ostream &os, const Slater_det &k)
 }
 
 
-CSF::CSF::CSF()                                   //默认构造函数
+CSF::CSF()                                   //默认构造函数
 {
 }
 
-CSF::CSF(const std::vector<int> &Orbital_ex, const double &S_ex, const double &MS_ex)                                   //默认构造函数
+CSF::CSF(const std::vector<int> &Orbital_ex, double S_ex, double MS_ex)                                   //默认构造函数
 {
     nelec = count(Orbital_ex.begin(), Orbital_ex.end(), 1) + count(Orbital_ex.begin(), Orbital_ex.end(), 2) + 2 * count(Orbital_ex.begin(), Orbital_ex.end(), 3);
     nOrb = Orbital_ex.size();
     S = S_ex;
     MS = MS_ex;
     MS2 = 2 * MS;
+    Orbital.resize(nOrb);
     for (int i = 0; i < nOrb; i++)
         Orbital[i] = Orbital_ex[i];
     
+    std::cout<<"CSF2Slater"<<endl;
     this->CSF2Slater();
-    coefficient.resize(n_Slater_CI);
-    this->coff_cal();
+    //std::cout<<"coefficient.resize(n_Slater_CI)"<<endl;
+    //coefficient.resize(n_Slater_CI);
+    //std::cout<<"coff_cal"<<endl;
+    //this->coff_cal();
+    std::cout<<"ok CSF"<<endl;
     
 
 }
@@ -201,15 +207,15 @@ CSF::~CSF()                                  //默认析构函数
 
 bool CSF::CSF2Slater()
 {
+    
     vector<int> Orbital_Slater(2 * nOrb);
     int n3 = 2 * count(Orbital.begin(), Orbital.end(), 3);//双占电子数
-
 
     vector<int> nsigma(2);
     nsigma[0] = (nelec -n3 + MS2)/2;
     nsigma[1] = (nelec -n3 - MS2)/2;
 
-    vector<int> index(nelec - n3);
+    vector<int> index;
 
 
     for(int i = 0; i < nOrb; i++)
@@ -224,13 +230,51 @@ bool CSF::CSF2Slater()
             index.push_back(i);
         }
     }
+    //for(int i = 0; i < index.size(); i++)
+        //cout<<index[i]<<"  ";
+    //cout<<endl;
 
-    this->vector2Slater(Orbital_Slater, index, nelec -n3, nsigma[0]);
+    cout<<"vector2Slater"<<endl;
+    this->vector2Slater(Orbital_Slater, index, nelec - n3, nsigma[0]);
+    cout<<"n_Slater_CI = Slater_CI.size();"<<endl;
     n_Slater_CI = Slater_CI.size();
+    cout<<n_Slater_CI<<"  coff_cal"<<endl;
     this->coff_cal();
+    std::cout<<"ok CSF2Slater"<<endl;
 
-    
+    return 1;
 
+}
+
+bool CSF::vector2Slater(std::vector<int> &Orbital_Slater, std::vector<int> &index, int nOrb_ex, int nalpha)
+{
+    if (nalpha < 1e-6)
+    {
+        int n = index.size();
+        int n_up = (n + S)/2;
+        int n_down = (n - S)/2;
+        for(int i = 0; i < n; i++)
+        {
+            int p = index[i];
+            
+            if (Orbital_Slater[p] == 0)
+                Orbital_Slater[nOrb + p] = 1;
+        }
+        Slater_det new_det(Orbital_Slater);
+        Slater_CI.push_back(new_det);
+        return 1;
+        
+    }
+
+    for (int i = nalpha; i <= nOrb_ex; i++)
+    {
+        int p = index[i - 1];
+        Orbital_Slater[p] = 1;
+        vector2Slater(Orbital_Slater, index, i, nalpha - 1);
+        Orbital_Slater[p] = 0;
+    }
+
+    return 1;
 }
 
 bool CSF::coff_cal()
@@ -295,58 +339,42 @@ bool CSF::coff_cal()
         }
         coefficient[i] = f;
     }
+    return 1;
 }
 
-bool CSF::vector2Slater(std::vector<int> &Orbital_Slater, std::vector<int> &index, int nOrb_ex, int nalpha)
+int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array, int start)
 {
-    if (nalpha < 1e-6)
-    {
-        int n = index.size();
-        int n_up = (n + S)/2;
-        int n_down = (n - S)/2;
-        for(int i = 0; i < n; i++)
-        {
-            int p = index[i];
-            
-            if (Orbital_Slater[p] == 0)
-                Orbital_Slater[nOrb + p] = 1;
-        }
-        Slater_det new_det(Orbital_Slater);
-        Slater_CI.push_back(new_det);
-        return 1;
-        
-    }
-
-    for (int i = nalpha; i <= nOrb_ex; i++)
-    {
-        int p = index[i - 1];
-        Orbital_Slater[p] = 1;
-        vector2Slater(Orbital_Slater, index, i - 1, nalpha - 1);
-        Orbital_Slater[p] = 0;
-    }
-}
-
-int CSF_new(int nelec_ex, int nOrb_ex, const double &S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array, int start)
-{
-    //cout << nelec_ex <<" "<< nOrb_ex<< endl;
-    if (nelec_ex < 1e-6)
+    //std::cout << nelec_ex <<" "<< nOrb_ex<< endl;
+    if (nelec_ex == 0)
     {   
+        //for(int i = 0; i < 2; i++)
+            //std::cout<<Orbital_ex[i]<<"  ";
+        //std::cout<<std::endl;
         int n1 = count(Orbital_ex.begin(), Orbital_ex.end(), 1);//单占轨道数量（自旋下降）
         int n2 = count(Orbital_ex.begin(), Orbital_ex.end(), 2);//单占轨道数量（自旋上升）
         int n3 = count(Orbital_ex.begin(), Orbital_ex.end(), 3);//双占轨道数量
         double S = ((double)(n1 - n2))/2;
-        if(abs(S - S_ex) > 1e-6)
+        if(fabs(S - S_ex) > 1e-6)
             return 0;
         
         int count = 0;
-        for(double MS = ((double)(n1 + n2))/2; MS > 1e-6; MS--, count++)
+        for(double MS = ((double)(n1 + n2))/2; MS >= -((double)(n1 + n2))/2; MS--)
         {
+            //std::cout<<MS<<std::endl;
+            for(int i = 0; i < Orbital_ex.size(); i++)
+                std::cout<<Orbital_ex[i]<<"  ";
+            std::cout<<std::endl;
             CSF new_CSF(Orbital_ex, S_ex, MS);
             CSF_Array.push_back(new_CSF);
+            count++;
         }
         return count;
     }
     else if (start >= nOrb_ex)
+    {
+        return 0;
+    }
+    else if(nelec_ex < 0)
     {
         return 0;
     }
@@ -370,9 +398,10 @@ int CSF_new(int nelec_ex, int nOrb_ex, const double &S_ex, std::vector<int> &Orb
             n = 2;
         else
             n = i;
-            
+        
         if(n <= nelec_ex)
         {
+            std::cout<<start<<"  "<<i<<"  "<<nelec_ex - n<<"  "<<start + 1<<std::endl;
             Orbital_ex[start] = i;
             ncount += CSF_new(nelec_ex - n, nOrb_ex, S_ex, Orbital_ex, CSF_Array, start + 1);
             Orbital_ex[start] = 0;
@@ -387,7 +416,6 @@ int CSF_new(int nelec_ex, int nOrb_ex, const double &S_ex, std::vector<int> &Orb
 
 std::ostream &operator<<(std::ostream &os, const CSF &k)
 {
-    string E_sigma[2];
     os << endl;
     os << "nelec: " << k.nelec << endl;
     os << "nOrb:  " << k.nOrb << endl;

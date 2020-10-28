@@ -3,9 +3,9 @@ CC = g++
 CXXFLAGS = -std=c++11
 
 app : $(objects)
-	g++ -o app $(objects)
+	g++ -g -o app $(objects)
 
-main.o : FCI.h File_string.h
+main.o : FCI.h File_string.h CI.h
 FCI.o : FCI.h CI.h
 CI.o : CI.h
 File_string.o : File_string.h

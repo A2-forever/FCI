@@ -95,19 +95,18 @@ int main()
 	vector<Slater_det> CI_Array;
 	vector<int> Orbital(2 * nOrb);
 	int nCI = CI_new(nelec, 2 * nOrb, MS, Orbital, CI_Array);
-	cout<<nCI<<endl;
 
 
-	vector<CSF> CSF_Array;
 	double S = 0;
 	int start = 0;
+	vector<CSF> CSF_Array;
 	vector<int> Orbital_CSF(nOrb);
 	int nCSF = CSF_new(nelec, nOrb, S, Orbital_CSF, CSF_Array, start);
-	cout<<nCSF<<endl;
 
 
 	logfile << "the number of CIs: " << nCI << endl;
 	cout << "the number of CIs: " << nCI << endl;
+	cout << "the number of CSFs: " << nCSF << endl;
 
 	for (int i = 0; i < nCI; i++)
 		logfile << CI_Array[i];
@@ -115,7 +114,7 @@ int main()
 	//构建Hamilton矩阵
 	double temp = 0;
 	MatrixXd H(nCI, nCI);
-	MatrixXd H2(nCSF, nCSF);
+	//MatrixXd H2(nCSF, nCSF);
 	for (int i = 0; i < nCI; i++)
 	{
 		H(i, i) = FCI.H_ij(CI_Array[i], CI_Array[i]);
