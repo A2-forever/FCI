@@ -114,7 +114,7 @@ int main()
 	//构建Hamilton矩阵
 	double temp = 0;
 	MatrixXd H(nCI, nCI);
-	//MatrixXd H2(nCSF, nCSF);
+	MatrixXd H2(nCSF, nCSF);
 	for (int i = 0; i < nCI; i++)
 	{
 		H(i, i) = FCI.H_ij(CI_Array[i], CI_Array[i]);

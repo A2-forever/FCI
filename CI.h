@@ -57,6 +57,6 @@ class CSF{
 //构建所有符合条件的CI组态，输入指定电子数，轨道数与自旋z分量，CI组态存于AI_Array中
 int CI_new(int nelec_ex, int nOrb_ex, const double &MS, std::vector<int> &Orbital_ex, std::vector<Slater_det> &CI_Array);
 //构建所有符合条件的CI组态，输入指定电子数，轨道数与自旋z分量，CI组态存于AI_Array中
-int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array, int start, double MS_ex);
+int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array, int start, double MS_ex = -100);
 
 #endif

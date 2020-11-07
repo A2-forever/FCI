@@ -190,13 +190,7 @@ CSF::CSF(const std::vector<int> &Orbital_ex, double S_ex, double MS_ex)         
     for (int i = 0; i < nOrb; i++)
         Orbital[i] = Orbital_ex[i];
     
-    std::cout<<"CSF2Slater"<<endl;
     this->CSF2Slater();
-    //std::cout<<"coefficient.resize(n_Slater_CI)"<<endl;
-    //coefficient.resize(n_Slater_CI);
-    //std::cout<<"coff_cal"<<endl;
-    //this->coff_cal();
-    std::cout<<"ok CSF"<<endl;
     
 
 }
@@ -234,13 +228,10 @@ bool CSF::CSF2Slater()
         //cout<<index[i]<<"  ";
     //cout<<endl;
 
-    cout<<"vector2Slater"<<endl;
     this->vector2Slater(Orbital_Slater, index, nelec - n3, nsigma[0]);
-    cout<<"n_Slater_CI = Slater_CI.size();"<<endl;
     n_Slater_CI = Slater_CI.size();
-    cout<<n_Slater_CI<<"  coff_cal"<<endl;
+    this->coefficient.resize(n_Slater_CI);
     this->coff_cal();
-    std::cout<<"ok CSF2Slater"<<endl;
 
     return 1;
 
@@ -279,10 +270,11 @@ bool CSF::vector2Slater(std::vector<int> &Orbital_Slater, std::vector<int> &inde
 
 bool CSF::coff_cal()
 {
-    vector<int> a(nOrb);
-    vector<int> b(nOrb);
-    vector<int> c(nOrb);
-    vector<int> d(nOrb);
+    int a[nOrb] = {0};
+    int b[nOrb] = {0};
+    int c[nOrb] = {0};
+    int d[nOrb] = {0};
+
 
     int p = Orbital[0];
     if(p == 1)
@@ -292,7 +284,6 @@ bool CSF::coff_cal()
     
     c[0] = 1 - a[0] - b[0];
     d[0] = 3 * a[0] + b[0];
-    
     for(int i = 1; i < nOrb; i++)
     {
         p = Orbital[i];
@@ -310,6 +301,7 @@ bool CSF::coff_cal()
         d[i] = 3 * (a[i] - a[i - 1]) + (b[i] - b[i - 1]);
     }
 
+    
     for(int i = 0; i < n_Slater_CI; i++)
     {
         double f = 1;
@@ -342,7 +334,7 @@ bool CSF::coff_cal()
     return 1;
 }
 
-int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array, int start, double MS_ex = -100)
+int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex, std::vector<CSF> &CSF_Array, int start, double MS_ex)
 {
     //std::cout << nelec_ex <<" "<< nOrb_ex<< endl;
     if (nelec_ex == 0)
@@ -358,12 +350,12 @@ int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex
             return 0;
 
 
-        for(int i = 0; i < Orbital_ex.size(); i++)
-            std::cout<<Orbital_ex[i]<<"  ";
-        std::cout<<std::endl;
+        //for(int i = 0; i < Orbital_ex.size(); i++)
+            //std::cout<<Orbital_ex[i]<<"  ";
+        //std::cout<<std::endl;
 
         int count = 0;
-        if(fabs(MS_ex + 100) > 1e-6)
+        if(fabs(MS_ex + 100) < 1e-6)
         {
             CSF new_CSF(Orbital_ex, S_ex, MS_ex);
             CSF_Array.push_back(new_CSF);
@@ -416,7 +408,7 @@ int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex
         
         if(n <= nelec_ex)
         {
-            std::cout<<start<<"  "<<i<<"  "<<nelec_ex - n<<"  "<<start + 1<<std::endl;
+            //std::cout<<start<<"  "<<i<<"  "<<nelec_ex - n<<"  "<<start + 1<<std::endl;
             Orbital_ex[start] = i;
             ncount += CSF_new(nelec_ex - n, nOrb_ex, S_ex, Orbital_ex, CSF_Array, start + 1);
             Orbital_ex[start] = 0;
