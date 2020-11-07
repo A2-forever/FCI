@@ -355,7 +355,7 @@ int CSF_new(int nelec_ex, int nOrb_ex, double S_ex, std::vector<int> &Orbital_ex
         //std::cout<<std::endl;
 
         int count = 0;
-        if(fabs(MS_ex + 100) < 1e-6)
+        if(fabs(MS_ex + 100) > 1e-6)
         {
             CSF new_CSF(Orbital_ex, S_ex, MS_ex);
             CSF_Array.push_back(new_CSF);
