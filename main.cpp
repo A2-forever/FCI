@@ -126,8 +126,20 @@ int main()
 		}
 	}
 
+	for (int i = 0; i < nCSF; i++)
+	{
+		H2(i, i) = FCI.H_ij(CSF_Array[i], CSF_Array[i]);
+		for (int j = i+1; j < nCSF; j++)
+		{
+			temp = FCI.H_ij(CSF_Array[i], CSF_Array[j]);
+			H2(i, j) = temp;
+			H2(j, i) = temp;
+		}
+	}
 	logfile << "Hamilton matrix: " << endl
 			<< H << endl;
+	logfile << "Hamilton matrix: " << endl
+			<< H2 << endl;
 
 	/*
 	//构建Hamilton矩阵

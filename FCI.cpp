@@ -44,9 +44,11 @@ double FCI::get(const int &i = -1, const int &j = -1, const int &k = -1, const i
 double FCI::H_ij(CSF &k1, CSF &k2)
 {
     double intergal = 0;
+    int n1 = k1.n_Slater_CI;
+    int n2 = k2.n_Slater_CI;
 
-    for(int i = 0; i < nOrb; i++)
-        for(int j = 0;j < nOrb; j++)
+    for(int i = 0; i < n1; i++)
+        for(int j = 0;j < n2; j++)
             intergal = k1.coefficient[i] * k2.coefficient[j] * H_ij(k1.Slater_CI[i], k2.Slater_CI[j]);
     
     
